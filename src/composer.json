@@ -1,12 +1,14 @@
 {
     "require": {
         "slim/slim": "^4.0",
-        "nyholm/psr7": "^1.8"
+        "nyholm/psr7": "^1.8",
+        "nyholm/psr7-server": "^1.0.2"
     },
 
     "autoload": {
         "psr-4": {
-            "App\\": "src/"
+            "App\\": "controllers/",
+            "Models\\": "models/"
         }
     }    
 }

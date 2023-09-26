@@ -1,9 +1,11 @@
 <?php
-namespace App\controllers;
+namespace App;
+
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-
-require_once 'models/Resource.php';
+use Models\Resource;
+use PDO;
+use PDOException;
 
 class ResourceController {
     private $db;
@@ -15,20 +17,25 @@ class ResourceController {
     }
 
     public function read(Request $request, Response $response, array $args): Response {
-        $result = $this->resource->read();
-        $num = $result->rowCount();
+        try {
+            $result = $this->resource->read();
+            $num = $result->rowCount();
 
-        if($num > 0) {
-            $resources_arr = array();
-            while($row = $result->fetch(PDO::FETCH_ASSOC)) {
-                array_push($resources_arr, $row);
+            if($num > 0) {
+                $resources_arr = array();
+                while($row = $result->fetch(PDO::FETCH_ASSOC)) {
+                    array_push($resources_arr, $row);
+                }
+                $response->getBody()->write(json_encode($resources_arr));
+                return $response->withHeader('Content-Type', 'application/json');
+            } else {
+                $response->getBody()->write(json_encode(array("message" => "Aucune ressource trouvée.")));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
             }
-            $response->getBody()->write(json_encode($resources_arr));
-        } else {
-            $response->getBody()->write(json_encode(array("message" => "Aucune ressource trouvée.")));
+        } catch (PDOException $e) {
+            $response->getBody()->write(json_encode(array("error" => $e->getMessage())));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
-
-        return $response->withHeader('Content-Type', 'application/json');
     }
 
     public function create(Request $request, Response $response, array $args): Response {
@@ -36,20 +43,25 @@ class ResourceController {
 
         if(empty($data['name']) || empty($data['url']) || empty($data['technology_id'])) {
             $response->getBody()->write(json_encode(array("message" => "Les données fournies sont incomplètes.")));
-            return $response->withHeader('Content-Type', 'application/json');
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
 
         $this->resource->name = $data['name'];
         $this->resource->url = $data['url'];
         $this->resource->technology_id = $data['technology_id'];
 
-        if($this->resource->create()) {
-            $response->getBody()->write(json_encode(array("message" => "Ressource créée.")));
-        } else {
-            $response->getBody()->write(json_encode(array("message" => "Échec de la création de la ressource.")));
+        try {
+            if($this->resource->create()) {
+                $response->getBody()->write(json_encode(array("message" => "Ressource créée.")));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
+            } else {
+                $response->getBody()->write(json_encode(array("message" => "Échec de la création de la ressource.")));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            }
+        } catch (PDOException $e) {
+            $response->getBody()->write(json_encode(array("error" => $e->getMessage())));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
-
-        return $response->withHeader('Content-Type', 'application/json');
     }
 
     public function update(Request $request, Response $response, array $args): Response {
@@ -58,7 +70,7 @@ class ResourceController {
 
         if(empty($data['name']) || empty($data['url']) || empty($data['technology_id'])) {
             $response->getBody()->write(json_encode(array("message" => "Les données fournies sont incomplètes.")));
-            return $response->withHeader('Content-Type', 'application/json');
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
 
         $this->resource->id = $id;
@@ -66,13 +78,18 @@ class ResourceController {
         $this->resource->url = $data['url'];
         $this->resource->technology_id = $data['technology_id'];
 
-        if($this->resource->update()) {
-            $response->getBody()->write(json_encode(array("message" => "Ressource mise à jour.")));
-        } else {
-            $response->getBody()->write(json_encode(array("message" => "Échec de la mise à jour de la ressource.")));
+        try {
+            if($this->resource->update()) {
+                $response->getBody()->write(json_encode(array("message" => "Ressource mise à jour.")));
+                return $response->withHeader('Content-Type', 'application/json');
+            } else {
+                $response->getBody()->write(json_encode(array("message" => "Échec de la mise à jour de la ressource.")));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            }
+        } catch (PDOException $e) {
+            $response->getBody()->write(json_encode(array("error" => $e->getMessage())));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
-
-        return $response->withHeader('Content-Type', 'application/json');
     }
 
     public function delete(Request $request, Response $response, array $args): Response {
@@ -80,13 +97,18 @@ class ResourceController {
 
         $this->resource->id = $id;
 
-        if($this->resource->delete()) {
-            $response->getBody()->write(json_encode(array("message" => "Ressource supprimée.")));
-        } else {
-            $response->getBody()->write(json_encode(array("message" => "Échec de la suppression de la ressource.")));
+        try {
+            if($this->resource->delete()) {
+                $response->getBody()->write(json_encode(array("message" => "Ressource supprimée.")));
+                return $response->withHeader('Content-Type', 'application/json');
+            } else {
+                $response->getBody()->write(json_encode(array("message" => "Échec de la suppression de la ressource.")));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            }
+        } catch (PDOException $e) {
+            $response->getBody()->write(json_encode(array("error" => $e->getMessage())));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
-
-        return $response->withHeader('Content-Type', 'application/json');
     }
 }
 ?>

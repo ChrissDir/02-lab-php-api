@@ -1,18 +1,18 @@
 <?php
+require 'vendor/autoload.php';
+require 'config.php';  // Assurez-vous que ce fichier est inclus en premier
 
 use Slim\Factory\AppFactory;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use App\controllers\TechnologyController;
-use App\controllers\CategoryController;
-use App\controllers\ResourceController;
-
-require 'vendor/autoload.php';
-require 'config.php';
+use App\TechnologyController;
+use App\CategoryController;
+use App\ResourceController;
 
 $app = AppFactory::create();
 
-$db = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME, DB_USER, DB_PASS);
+$db = new PDO('mysql:host='.DB_HOST.';dbname='.DB_NAME, DB_USER, DB_PASS);
+$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 $technologyController = new TechnologyController($db);
 $categoryController = new CategoryController($db);
@@ -67,6 +67,15 @@ $errorMiddleware->setDefaultErrorHandler($customErrorHandler);
 $app->get('/', function (Request $request, Response $response, $args) {
     $response->getBody()->write(file_get_contents(__DIR__ . '/index.html'));
     return $response;
+});
+
+// Middleware pour gérer les headers CORS
+$app->add(function ($request, $handler) {
+    $response = $handler->handle($request);
+    return $response
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
 });
 
 $app->run();

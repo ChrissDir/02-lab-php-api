@@ -1,8 +1,14 @@
 <?php
+namespace Models;
+use PDOException;
+use PDO;
+use Exception;
 
 class Technology {
     private $conn;
     private const TABLE_NAME = 'technologie';
+    private const MAX_NAME_LENGTH = 255;  // Assurez-vous que cela correspond à la configuration de votre base de données
+    private const MAX_LOGO_URL_LENGTH = 2048;  // Assurez-vous que cela correspond à la configuration de votre base de données
 
     public $id;
     public $name;
@@ -13,7 +19,7 @@ class Technology {
         $this->conn = $db;
     }
 
-    public function read($offset = 0, $items_per_page = 10) {
+    public function read(int $offset = 0, int $items_per_page = 10) {
         $query = "SELECT * FROM " . self::TABLE_NAME . " LIMIT :offset, :items_per_page";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
@@ -27,7 +33,13 @@ class Technology {
         }
     }
 
-    public function create() {
+    public function create(): bool {
+        if (empty($this->name) || strlen($this->name) > self::MAX_NAME_LENGTH || 
+            empty($this->logo) || strlen($this->logo) > self::MAX_LOGO_URL_LENGTH || 
+            empty($this->category_id)) {
+            throw new Exception("Les données fournies sont incomplètes ou invalides.");
+        }
+
         $query = "INSERT INTO " . self::TABLE_NAME . " SET nom=:name, logo=:logo, categorie_id=:category_id";
         $stmt = $this->conn->prepare($query);
 
@@ -40,16 +52,18 @@ class Technology {
         $stmt->bindParam(':category_id', $this->category_id);
 
         try {
-            if($stmt->execute()) {
-                return true;
-            }
-            return false;
+            return $stmt->execute();
         } catch (PDOException $e) {
             throw new Exception("Erreur de création de technologie : " . $e->getMessage());
         }
     }
 
-    public function update() {
+    public function update(): bool {
+        if (empty($this->id) || 
+            (empty($this->name) && empty($this->logo) && empty($this->category_id))) {
+            throw new Exception("Aucune donnée fournie pour la mise à jour.");
+        }
+
         $query = "UPDATE " . self::TABLE_NAME . " SET nom=:name, logo=:logo, categorie_id=:category_id WHERE id=:id";
         $stmt = $this->conn->prepare($query);
 
@@ -64,16 +78,17 @@ class Technology {
         $stmt->bindParam(':id', $this->id);
 
         try {
-            if($stmt->execute()) {
-                return true;
-            }
-            return false;
+            return $stmt->execute();
         } catch (PDOException $e) {
             throw new Exception("Erreur de mise à jour de technologie : " . $e->getMessage());
         }
     }
 
-    public function delete() {
+    public function delete(): bool {
+        if (empty($this->id)) {
+            throw new Exception("ID de technologie invalide.");
+        }
+
         $query = "DELETE FROM " . self::TABLE_NAME . " WHERE id=:id";
         $stmt = $this->conn->prepare($query);
 
@@ -82,10 +97,7 @@ class Technology {
         $stmt->bindParam(':id', $this->id);
 
         try {
-            if($stmt->execute()) {
-                return true;
-            }
-            return false;
+            return $stmt->execute();
         } catch (PDOException $e) {
             throw new Exception("Erreur de suppression de technologie : " . $e->getMessage());
         }

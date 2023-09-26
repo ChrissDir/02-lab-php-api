@@ -1,6 +1,6 @@
 <?php
-define('DB_HOST', 'db');  // Nom du service de la base de données dans docker-compose
-define('DB_NAME', 'tech_db');
-define('DB_USER', 'root');
-define('DB_PASS', 'rootpassword');
+define('DB_HOST', 'db');
+define('DB_NAME', getenv('MYSQL_DATABASE'));
+define('DB_USER', getenv('MYSQL_USER'));
+define('DB_PASS', getenv('MYSQL_PASSWORD'));
 ?>

@@ -25,6 +25,11 @@ class ComposerStaticInitbaac3510d79556678efc069d85d35038
         'N' => 
         array (
             'Nyholm\\Psr7\\' => 12,
+            'Nyholm\\Psr7Server\\' => 18,
+        ),
+        'M' => 
+        array (
+            'Models\\' => 7,
         ),
         'F' => 
         array (
@@ -63,13 +68,21 @@ class ComposerStaticInitbaac3510d79556678efc069d85d35038
         array (
             0 => __DIR__ . '/..' . '/nyholm/psr7/src',
         ),
+        'Nyholm\\Psr7Server\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/nyholm/psr7-server/src',
+        ),
+        'Models\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/models',
+        ),
         'FastRoute\\' => 
         array (
             0 => __DIR__ . '/..' . '/nikic/fast-route/src',
         ),
         'App\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/src',
+            0 => __DIR__ . '/../..' . '/controllers',
         ),
     );
 

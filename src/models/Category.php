@@ -1,8 +1,12 @@
 <?php
+namespace Models;
+use PDOException;
+use Exception;
 
 class Category {
     private $conn;
     private const TABLE_NAME = 'categorie';
+    private const MAX_NAME_LENGTH = 255;  // Assurez-vous que cela correspond à la configuration de votre base de données
 
     public $id;
     public $name;
@@ -23,7 +27,11 @@ class Category {
         }
     }
 
-    public function create() {
+    public function create(): bool {
+        if (empty($this->name) || strlen($this->name) > self::MAX_NAME_LENGTH) {
+            throw new Exception("Nom de catégorie invalide.");
+        }
+
         $query = "INSERT INTO " . self::TABLE_NAME . " SET nom=:name";
         $stmt = $this->conn->prepare($query);
 
@@ -32,16 +40,17 @@ class Category {
         $stmt->bindParam(':name', $this->name);
 
         try {
-            if($stmt->execute()) {
-                return true;
-            }
-            return false;
+            return $stmt->execute();
         } catch (PDOException $e) {
             throw new Exception("Erreur de création de catégorie : " . $e->getMessage());
         }
     }
 
-    public function update() {
+    public function update(): bool {
+        if (empty($this->name) || strlen($this->name) > self::MAX_NAME_LENGTH || empty($this->id)) {
+            throw new Exception("Données invalides pour la mise à jour.");
+        }
+
         $query = "UPDATE " . self::TABLE_NAME . " SET nom=:name WHERE id=:id";
         $stmt = $this->conn->prepare($query);
 
@@ -52,16 +61,17 @@ class Category {
         $stmt->bindParam(':id', $this->id);
 
         try {
-            if($stmt->execute()) {
-                return true;
-            }
-            return false;
+            return $stmt->execute();
         } catch (PDOException $e) {
             throw new Exception("Erreur de mise à jour de catégorie : " . $e->getMessage());
         }
     }
 
-    public function delete() {
+    public function delete(): bool {
+        if (empty($this->id)) {
+            throw new Exception("ID de catégorie invalide.");
+        }
+
         $query = "DELETE FROM " . self::TABLE_NAME . " WHERE id=:id";
         $stmt = $this->conn->prepare($query);
 
@@ -70,13 +80,11 @@ class Category {
         $stmt->bindParam(':id', $this->id);
 
         try {
-            if($stmt->execute()) {
-                return true;
-            }
-            return false;
+            return $stmt->execute();
         } catch (PDOException $e) {
             throw new Exception("Erreur de suppression de catégorie : " . $e->getMessage());
         }
     }
 }
 ?>
+
