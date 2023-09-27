@@ -30,15 +30,12 @@ class TechnologyController {
                 while($row = $result->fetch(PDO::FETCH_ASSOC)) {
                     array_push($technologies_arr, $row);
                 }
-                $response->getBody()->write(json_encode($technologies_arr));
-                return $response->withHeader('Content-Type', 'application/json');
+                return $response->withJson($technologies_arr, 200);
             } else {
-                $response->getBody()->write(json_encode(array("message" => "Aucune technologie trouvée.")));
-                return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+                return $response->withJson(["message" => "Aucune technologie trouvée."], 404);
             }
         } catch (PDOException $e) {
-            $response->getBody()->write(json_encode(array("error" => $e->getMessage())));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            return $response->withJson(["error" => $e->getMessage()], 500);
         }
     }
 
@@ -46,25 +43,21 @@ class TechnologyController {
         $data = $request->getParsedBody();
 
         if(empty($data['name']) || empty($data['category_id'])) {
-            $response->getBody()->write(json_encode(array("message" => "Les données fournies sont incomplètes.")));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            return $response->withJson(["message" => "Les données fournies sont incomplètes."], 400);
         }
 
         $this->technology->name = $data['name'];
-        $this->technology->logo = $data['logo'];  // Assuming logo can be empty
+        $this->technology->logo = $data['logo'];
         $this->technology->category_id = $data['category_id'];
 
         try {
             if($this->technology->create()) {
-                $response->getBody()->write(json_encode(array("message" => "Technologie créée.")));
-                return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
+                return $response->withJson(["message" => "Technologie créée."], 201);
             } else {
-                $response->getBody()->write(json_encode(array("message" => "Échec de la création de la technologie.")));
-                return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+                return $response->withJson(["message" => "Échec de la création de la technologie."], 500);
             }
         } catch (PDOException $e) {
-            $response->getBody()->write(json_encode(array("error" => $e->getMessage())));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            return $response->withJson(["error" => $e->getMessage()], 500);
         }
     }
 
@@ -73,8 +66,7 @@ class TechnologyController {
         $data = $request->getParsedBody();
 
         if(empty($data['name']) && empty($data['logo']) && empty($data['category_id'])) {
-            $response->getBody()->write(json_encode(array("message" => "Aucune donnée fournie pour la mise à jour.")));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            return $response->withJson(["message" => "Aucune donnée fournie pour la mise à jour."], 400);
         }
 
         $this->technology->id = $id;
@@ -84,15 +76,12 @@ class TechnologyController {
 
         try {
             if($this->technology->update()) {
-                $response->getBody()->write(json_encode(array("message" => "Technologie mise à jour.")));
-                return $response->withHeader('Content-Type', 'application/json');
+                return $response->withJson(["message" => "Technologie mise à jour."], 200);
             } else {
-                $response->getBody()->write(json_encode(array("message" => "Échec de la mise à jour de la technologie.")));
-                return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+                return $response->withJson(["message" => "Échec de la mise à jour de la technologie."], 500);
             }
         } catch (PDOException $e) {
-            $response->getBody()->write(json_encode(array("error" => $e->getMessage())));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            return $response->withJson(["error" => $e->getMessage()], 500);
         }
     }
 
@@ -103,15 +92,12 @@ class TechnologyController {
 
         try {
             if($this->technology->delete()) {
-                $response->getBody()->write(json_encode(array("message" => "Technologie supprimée.")));
-                return $response->withHeader('Content-Type', 'application/json');
+                return $response->withJson(["message" => "Technologie supprimée."], 200);
             } else {
-                $response->getBody()->write(json_encode(array("message" => "Échec de la suppression de la technologie.")));
-                return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+                return $response->withJson(["message" => "Échec de la suppression de la technologie."], 500);
             }
         } catch (PDOException $e) {
-            $response->getBody()->write(json_encode(array("error" => $e->getMessage())));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            return $response->withJson(["error" => $e->getMessage()], 500);
         }
     }
 }

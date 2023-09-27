@@ -1,6 +1,6 @@
 <?php
 require 'vendor/autoload.php';
-require 'config.php';  // Assurez-vous que ce fichier est inclus en premier
+require 'config.php';
 
 use Slim\Factory\AppFactory;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -8,41 +8,45 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use App\TechnologyController;
 use App\CategoryController;
 use App\ResourceController;
+use Slim\Middleware\ErrorMiddleware;
+
+function logMessage($message) {
+    $logFile = fopen('app.log', 'a');  // Ouvre le fichier app.log en mode append
+    fwrite($logFile, date('Y-m-d H:i:s') . " - " . $message . "\n");  // Écrit le message dans le fichier de log
+    fclose($logFile);  // Ferme le fichier de log
+}
 
 $app = AppFactory::create();
 
+// Configuration de la base de données
 $db = new PDO('mysql:host='.DB_HOST.';dbname='.DB_NAME, DB_USER, DB_PASS);
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+// Injection des dépendances dans les contrôleurs
 $technologyController = new TechnologyController($db);
 $categoryController = new CategoryController($db);
 $resourceController = new ResourceController($db);
 
-// Route pour obtenir toutes les technologies
-$app->get('/technologies', function (Request $request, Response $response, $args) use ($technologyController) {
-    return $technologyController->read($request, $response, $args);
-});
+// Définition des routes
+// Routes pour TechnologyController
+$app->get('/technologies', [$technologyController, 'read']);
+$app->post('/technologies', [$technologyController, 'create']);
+$app->put('/technologies/{id}', [$technologyController, 'update']);
+$app->delete('/technologies/{id}', [$technologyController, 'delete']);
 
-// Route pour créer une nouvelle technologie
-$app->post('/technologies', function (Request $request, Response $response, $args) use ($technologyController) {
-    $data = $request->getParsedBody();
-    return $technologyController->create($request, $response, $args);
-});
+// Routes pour CategoryController
+$app->get('/categories', [$categoryController, 'read']);
+$app->post('/categories', [$categoryController, 'create']);
+$app->put('/categories/{id}', [$categoryController, 'update']);
+$app->delete('/categories/{id}', [$categoryController, 'delete']);
 
-// Route pour mettre à jour une technologie
-$app->put('/technologies/{id}', function (Request $request, Response $response, $args) use ($technologyController) {
-    $id = $args['id'];
-    $data = $request->getParsedBody();
-    return $technologyController->update($request, $response, $args);
-});
+// Routes pour ResourceController
+$app->get('/resources', [$resourceController, 'read']);
+$app->post('/resources', [$resourceController, 'create']);
+$app->put('/resources/{id}', [$resourceController, 'update']);
+$app->delete('/resources/{id}', [$resourceController, 'delete']);
 
-// Route pour supprimer une technologie
-$app->delete('/technologies/{id}', function (Request $request, Response $response, $args) use ($technologyController) {
-    $id = $args['id'];
-    return $technologyController->delete($request, $response, $args);
-});
-
-// Gestionnaire d'erreurs
+// Gestionnaire d'erreurs personnalisé
 $customErrorHandler = function (
     Request $request,
     Throwable $exception,
@@ -50,24 +54,16 @@ $customErrorHandler = function (
     bool $logErrors,
     bool $logErrorDetails
 ) use ($app) {
-    $payload = [
-        'error' => $exception->getMessage()
-    ];
+    logMessage($exception->getMessage());  // Log l'erreur
+    $payload = ['error' => $exception->getMessage()];
     $response = $app->getResponseFactory()->createResponse();
-    $response->getBody()->write(
-        json_encode($payload, JSON_UNESCAPED_UNICODE)
-    );
-    return $response->withStatus(500);
+    $response->getBody()->write(json_encode($payload, JSON_UNESCAPED_UNICODE));
+    return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
 };
 
-// Ajoutez le gestionnaire d'erreurs à l'application
+// Ajout du middleware d'erreur
 $errorMiddleware = $app->addErrorMiddleware(true, true, true);
 $errorMiddleware->setDefaultErrorHandler($customErrorHandler);
-
-$app->get('/', function (Request $request, Response $response, $args) {
-    $response->getBody()->write(file_get_contents(__DIR__ . '/index.html'));
-    return $response;
-});
 
 // Middleware pour gérer les headers CORS
 $app->add(function ($request, $handler) {

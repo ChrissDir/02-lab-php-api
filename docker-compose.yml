@@ -3,6 +3,7 @@ version: '3.8'
 services:
   web:
     build:
+      context: .
       dockerfile: Dockerfile
     image: php:apache-bullseye
     container_name: php_apache
@@ -18,15 +19,15 @@ services:
       - db
 
   db:
-    image: mysql
+    image: mysql:latest
     container_name: mysql_db
     environment:
-      - MYSQL_ROOT_PASSWORD= "135792468"
+      - MYSQL_ROOT_PASSWORD=135792468
       - MYSQL_DATABASE=tech_db
       - MYSQL_USER=theFirstUser
       - MYSQL_PASSWORD=theFirstUser1234
     ports:
-      - "3007:3006"
+      - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql

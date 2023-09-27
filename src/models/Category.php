@@ -6,7 +6,7 @@ use Exception;
 class Category {
     private $conn;
     private const TABLE_NAME = 'categorie';
-    private const MAX_NAME_LENGTH = 255;  // Assurez-vous que cela correspond à la configuration de votre base de données
+    private const MAX_NAME_LENGTH = 255;
 
     public $id;
     public $name;
@@ -15,6 +15,12 @@ class Category {
         $this->conn = $db;
     }
 
+    /**
+     * Reads all categories from the database.
+     *
+     * @return PDOStatement The result statement.
+     * @throws Exception If there is an error during the database operation.
+     */
     public function read() {
         $query = "SELECT * FROM " . self::TABLE_NAME;
         $stmt = $this->conn->prepare($query);
@@ -27,6 +33,12 @@ class Category {
         }
     }
 
+    /**
+     * Creates a new category in the database.
+     *
+     * @return bool True on success, false otherwise.
+     * @throws Exception If there is an error during the database operation or invalid data.
+     */
     public function create(): bool {
         if (empty($this->name) || strlen($this->name) > self::MAX_NAME_LENGTH) {
             throw new Exception("Nom de catégorie invalide.");
@@ -46,8 +58,14 @@ class Category {
         }
     }
 
+    /**
+     * Updates an existing category in the database.
+     *
+     * @return bool True on success, false otherwise.
+     * @throws Exception If there is an error during the database operation or invalid data.
+     */
     public function update(): bool {
-        if (empty($this->name) || strlen($this->name) > self::MAX_NAME_LENGTH || empty($this->id)) {
+        if (empty($this->name) || strlen($this->name) > self::MAX_NAME_LENGTH || empty($this->id) || !is_numeric($this->id)) {
             throw new Exception("Données invalides pour la mise à jour.");
         }
 
@@ -58,7 +76,7 @@ class Category {
         $this->id = htmlspecialchars(strip_tags($this->id));
 
         $stmt->bindParam(':name', $this->name);
-        $stmt->bindParam(':id', $this->id);
+        $stmt->bindParam(':id', $this->id, \PDO::PARAM_INT);
 
         try {
             return $stmt->execute();
@@ -67,8 +85,14 @@ class Category {
         }
     }
 
+    /**
+     * Deletes an existing category from the database.
+     *
+     * @return bool True on success, false otherwise.
+     * @throws Exception If there is an error during the database operation or invalid data.
+     */
     public function delete(): bool {
-        if (empty($this->id)) {
+        if (empty($this->id) || !is_numeric($this->id)) {
             throw new Exception("ID de catégorie invalide.");
         }
 
@@ -77,7 +101,7 @@ class Category {
 
         $this->id = htmlspecialchars(strip_tags($this->id));
 
-        $stmt->bindParam(':id', $this->id);
+        $stmt->bindParam(':id', $this->id, \PDO::PARAM_INT);
 
         try {
             return $stmt->execute();
@@ -87,4 +111,3 @@ class Category {
     }
 }
 ?>
-

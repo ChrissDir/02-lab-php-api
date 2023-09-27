@@ -29,8 +29,8 @@ class CategoryController {
                 $response->getBody()->write(json_encode($categories_arr));
                 return $response->withHeader('Content-Type', 'application/json');
             } else {
-                $response->getBody()->write(json_encode(array("message" => "Aucune catégorie trouvée.")));
-                return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+                $data = array('error' => 'Aucune catégorie trouvée');  // Modifié le message d'erreur
+                return $response -> withJson($data, 404);  // Ajouté le code d'état 404
             }
         } catch (PDOException $e) {
             $response->getBody()->write(json_encode(array("error" => $e->getMessage())));

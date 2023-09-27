@@ -68,15 +68,15 @@ class ResourceController {
         $id = $args['id'];
         $data = $request->getParsedBody();
 
-        if(empty($data['name']) || empty($data['url']) || empty($data['technology_id'])) {
-            $response->getBody()->write(json_encode(array("message" => "Les données fournies sont incomplètes.")));
+        if(empty($data['name']) && empty($data['url']) && empty($data['technology_id'])) {  // Modifié pour permettre des mises à jour partielles
+            $response->getBody()->write(json_encode(array("message" => "Aucune donnée fournie pour la mise à jour.")));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
 
         $this->resource->id = $id;
-        $this->resource->name = $data['name'];
-        $this->resource->url = $data['url'];
-        $this->resource->technology_id = $data['technology_id'];
+        if(!empty($data['name'])) $this->resource->name = $data['name'];  // Permet des mises à jour partielles
+        if(!empty($data['url'])) $this->resource->url = $data['url'];  // Permet des mises à jour partielles
+        if(!empty($data['technology_id'])) $this->resource->technology_id = $data['technology_id'];  // Permet des mises à jour partielles
 
         try {
             if($this->resource->update()) {
@@ -112,4 +112,3 @@ class ResourceController {
     }
 }
 ?>
-
