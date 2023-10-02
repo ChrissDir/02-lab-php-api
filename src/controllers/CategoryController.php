@@ -1,46 +1,66 @@
 <?php
+// ------------------------------
+// Namespace et Importations
+// ------------------------------
 namespace App;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Models\Category;
 use PDO;
-use PDOException;
+use Exception;  // Importation de la classe Exception
 
+// ------------------------------
+// Contrôleur de Catégorie
+// ------------------------------
 class CategoryController {
     private $db;
     private $category;
 
+    // ------------------------------
+    // Constructeur
+    // ------------------------------
     public function __construct($db) {
         $this->db = $db;
         $this->category = new Category($db);
     }
 
+    // ------------------------------
+    // Fonction pour extraire les données de la requête
+    // ------------------------------
+    private function getData(Request $request) {
+        $data = $request->getParsedBody();
+        if (empty($data)) {
+            $data = $request->getParsedBody();
+        }
+        return $data;
+    }
+
+    // ------------------------------
+    // Lire les catégories
+    // ------------------------------
     public function read(Request $request, Response $response, array $args): Response {
         try {
-            $result = $this->category->read();
-            $num = $result->rowCount();
-
-            if($num > 0) {
-                $categories_arr = array();
-                while($row = $result->fetch(PDO::FETCH_ASSOC)) {
-                    array_push($categories_arr, $row);
-                }
+            $categories_arr = $this->category->read();
+            if(!empty($categories_arr)) {
                 $response->getBody()->write(json_encode($categories_arr));
                 return $response->withHeader('Content-Type', 'application/json');
             } else {
-                $data = array('error' => 'Aucune catégorie trouvée');  // Modifié le message d'erreur
-                return $response -> withJson($data, 404);  // Ajouté le code d'état 404
+                $data = array('error' => 'Aucune catégorie trouvée');
+                $response->getBody()->write(json_encode($data));  
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
             }
-        } catch (PDOException $e) {
+        } catch (Exception $e) {  // Modification ici
             $response->getBody()->write(json_encode(array("error" => $e->getMessage())));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
     }
 
+    // ------------------------------
+    // Créer une catégorie
+    // ------------------------------
     public function create(Request $request, Response $response, array $args): Response {
-        $data = $request->getParsedBody();
-
+        $data = $this->getData($request);
         if(empty($data['name'])) {
             $response->getBody()->write(json_encode(array("message" => "Les données fournies sont incomplètes.")));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
@@ -56,16 +76,18 @@ class CategoryController {
                 $response->getBody()->write(json_encode(array("message" => "Échec de la création de la catégorie.")));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
             }
-        } catch (PDOException $e) {
+        } catch (Exception $e) {  // Modification ici
             $response->getBody()->write(json_encode(array("error" => $e->getMessage())));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
     }
 
+    // ------------------------------
+    // Mettre à jour une catégorie
+    // ------------------------------
     public function update(Request $request, Response $response, array $args): Response {
         $id = $args['id'];
         $data = $request->getParsedBody();
-
         if(empty($data['name'])) {
             $response->getBody()->write(json_encode(array("message" => "Les données fournies sont incomplètes.")));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
@@ -82,14 +104,18 @@ class CategoryController {
                 $response->getBody()->write(json_encode(array("message" => "Échec de la mise à jour de la catégorie.")));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
             }
-        } catch (PDOException $e) {
+        } catch (Exception $e) {  // Modification ici
             $response->getBody()->write(json_encode(array("error" => $e->getMessage())));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
     }
 
+    // ------------------------------
+    // Supprimer une catégorie
+    // ------------------------------
     public function delete(Request $request, Response $response, array $args): Response {
-        $id = $args['id'];
+        $data = $this->getData($request);
+        $id = $args['id'] ?? $data['id'];  // Permet de supprimer par ID dans l'URL ou dans le corps de la requête
 
         $this->category->id = $id;
 
@@ -101,7 +127,7 @@ class CategoryController {
                 $response->getBody()->write(json_encode(array("message" => "Échec de la suppression de la catégorie.")));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
             }
-        } catch (PDOException $e) {
+        } catch (Exception $e) {  // Modification ici
             $response->getBody()->write(json_encode(array("error" => $e->getMessage())));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }

@@ -1,13 +1,12 @@
 # 02-lab-php-api
 
-Ce projet est une API REST développée en PHP, permettant de gérer des technologies, des catégories et des ressources dans le domaine du développement web.
+Ce projet est une API REST développée en PHP en utilisant le framework Slim 4, permettant de gérer des technologies, des catégories et des ressources dans le domaine du développement web.
 
 ## Installation
 
 1. Clonez ce dépôt Git.
 2. Assurez-vous d'avoir Docker installé sur votre machine.
-3. Exécutez `docker-compose up` à la racine du projet pour démarrer les conteneurs Docker.
-4. Importez le fichier `db/init.sql` dans votre base de données MySQL pour initialiser la structure de la base de données.
+3. Exécutez `docker compose up` à la racine du projet pour démarrer les conteneurs Docker.
 
 ## API Endpoints
 
@@ -23,7 +22,7 @@ Ce projet est une API REST développée en PHP, permettant de gérer des technol
   - Paramètres : `name`, `logo`, `category_id`
 
 - **Mettre à jour une technologie** :
-  - Méthode : `PUT`
+  - Méthode : `POST`
   - URL : `/technologies/{id}`
   - Paramètres : `name`, `logo`, `category_id`
 
@@ -43,7 +42,7 @@ Ce projet est une API REST développée en PHP, permettant de gérer des technol
   - Paramètres : `name`
 
 - **Mettre à jour une catégorie** :
-  - Méthode : `PUT`
+  - Méthode : `POST`
   - URL : `/categories/{id}`
   - Paramètres : `name`
 
@@ -55,21 +54,21 @@ Ce projet est une API REST développée en PHP, permettant de gérer des technol
 
 - **Lister toutes les ressources** :
   - Méthode : `GET`
-  - URL : `/resources`
+  - URL : `/ressources`
 
 - **Créer une nouvelle ressource** :
   - Méthode : `POST`
-  - URL : `/resources`
+  - URL : `/ressources`
   - Paramètres : `name`, `url`, `technology_id`
 
 - **Mettre à jour une ressource** :
-  - Méthode : `PUT`
-  - URL : `/resources/{id}`
+  - Méthode : `POST`
+  - URL : `/ressources/{id}`
   - Paramètres : `name`, `url`, `technology_id`
 
 - **Supprimer une ressource** :
   - Méthode : `DELETE`
-  - URL : `/resources/{id}`
+  - URL : `/ressources/{id}`
 
 ## Tests
 
@@ -77,8 +76,4 @@ Utilisez Postman ou un autre outil de test d'API pour tester les endpoints de l'
 
 ## Déploiement
 
-Le projet est déployé sur un serveur avec Docker, accessible via le domaine `php-dev-2.online`.
-
-## Licence
-
-Ce projet est sous licence MIT.
+Le projet est déployé sur un serveur avec Docker, accessible via le domaine `php-dev-2.online` ou `localhost`.
