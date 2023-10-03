@@ -8,7 +8,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Models\Category;
 use PDO;
-use Exception;  // Importation de la classe Exception
+use Exception;
 
 // ------------------------------
 // Contrôleur de Catégorie

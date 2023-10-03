@@ -43,6 +43,16 @@ $app->group('/technologies', function ($group) use ($db) {
     $group->post('', [$controller, 'create']);
     $group->post('/{id}', [$controller, 'update']);
     $group->delete('/{id}', [$controller, 'delete']);
+
+    // Routes pour gérer les ressources associées à une technologie
+    $group->get('/{id}/ressources', [$controller, 'getResources']);
+    $group->post('/{id}/ressources', [$controller, 'addResource']);
+    $group->delete('/{id}/ressources/{resourceId}', [$controller, 'removeResource']);
+
+    // Routes pour gérer les catégories associées à une technologie
+    $group->get('/{id}/categories', [$controller, 'getCategories']);
+    $group->post('/{id}/categories', [$controller, 'addCategory']);
+    $group->delete('/{id}/categories/{categoryId}', [$controller, 'removeCategory']);
 });
 
 // ------------------------------

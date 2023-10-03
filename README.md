@@ -7,6 +7,7 @@ Ce projet est une API REST développée en PHP en utilisant le framework Slim 4,
 1. Clonez ce dépôt Git.
 2. Assurez-vous d'avoir Docker installé sur votre machine.
 3. Exécutez `docker compose up` à la racine du projet pour démarrer les conteneurs Docker.
+4. Une fois que Docker est en cours d'exécution, l'API est accessible et prête à être utilisée. Toute la logique du projet se trouve dans le répertoire src/.
 
 ## API Endpoints
 
@@ -29,6 +30,32 @@ Ce projet est une API REST développée en PHP en utilisant le framework Slim 4,
 - **Supprimer une technologie** :
   - Méthode : `DELETE`
   - URL : `/technologies/{id}`
+
+- **Lister toutes les ressources d'une technologie** :
+  - Méthode : `GET`
+  - URL : `/technologies/{id}/ressources`
+
+- **Ajouter une ressource à une technologie** :
+  - Méthode : `POST`
+  - URL : `/technologies/{id}/ressources`
+  - Paramètres : `resource_id`
+
+- **Supprimer une ressource d'une technologie** :
+  - Méthode : `DELETE`
+  - URL : `/technologies/{id}/ressources/{resourceId}`
+
+- **Lister toutes les catégories d'une technologie** :
+  - Méthode : `GET`
+  - URL : `/technologies/{id}/categories`
+
+- **Ajouter une catégorie à une technologie** :
+  - Méthode : `POST`
+  - URL : `/technologies/{id}/categories`
+  - Paramètres : `category_id`
+
+- **Supprimer une catégorie d'une technologie** :
+  - Méthode : `DELETE`
+  - URL : `/technologies/{id}/categories/{categoryId}`
 
 ### Catégories
 

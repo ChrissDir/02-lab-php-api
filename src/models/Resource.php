@@ -40,22 +40,19 @@ class Resource {
      */
     public function create(): bool {
         if (empty($this->name) || strlen($this->name) > self::MAX_NAME_LENGTH || 
-            empty($this->url) || strlen($this->url) > self::MAX_URL_LENGTH || 
-            empty($this->technology_id)) {
+            empty($this->url) || strlen($this->url) > self::MAX_URL_LENGTH) {
             throw new Exception("Les données fournies sont incomplètes ou invalides.");
         }
-
-        $query = "INSERT INTO " . self::TABLE_NAME . " SET nom=:name, url=:url, technologie_id=:technology_id";
+    
+        $query = "INSERT INTO " . self::TABLE_NAME . " SET nom=:name, url=:url";
         $stmt = $this->conn->prepare($query);
-
+    
         $this->name = htmlspecialchars(strip_tags($this->name));
         $this->url = htmlspecialchars(strip_tags($this->url));
-        $this->technology_id = (int) htmlspecialchars(strip_tags($this->technology_id));
-
+    
         $stmt->bindParam(':name', $this->name);
         $stmt->bindParam(':url', $this->url);
-        $stmt->bindParam(':technology_id', $this->technology_id, \PDO::PARAM_INT);
-
+    
         try {
             return $stmt->execute();
         } catch (PDOException $e) {
@@ -140,52 +137,13 @@ class Resource {
         }
     }
 
-    /**
-     * @throws Exception
-     */
-    public function addTechnology(int $technologyId): bool {
-        if (empty($this->id) || empty($technologyId)) {
-            throw new Exception("ID de ressource ou de technologie invalide.");
-        }
-
-        $query = "INSERT INTO technologie_ressource (ressource_id, technologie_id) VALUES (:resourceId, :technologyId)";
+    public function addTechnologyResourceRelationship(int $technologyId): bool {
+        $query = "INSERT INTO technologie_ressource (technologie_id, ressource_id) VALUES (:technology_id, :resource_id)";
         $stmt = $this->conn->prepare($query);
-
-        $this->id = (int) htmlspecialchars(strip_tags($this->id));
-        $technologyId = (int) htmlspecialchars(strip_tags($technologyId));
-
-        $stmt->bindParam(':resourceId', $this->id, \PDO::PARAM_INT);
-        $stmt->bindParam(':technologyId', $technologyId, \PDO::PARAM_INT);
-
-        try {
-            return $stmt->execute();
-        } catch (PDOException $e) {
-            throw new Exception("Erreur d'association de technologie : " . $e->getMessage());
-        }
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function removeTechnology(int $technologyId): bool {
-        if (empty($this->id) || empty($technologyId)) {
-            throw new Exception("ID de ressource ou de technologie invalide.");
-        }
-
-        $query = "DELETE FROM technologie_ressource WHERE ressource_id = :resourceId AND technologie_id = :technologyId";
-        $stmt = $this->conn->prepare($query);
-
-        $this->id = (int) htmlspecialchars(strip_tags($this->id));
-        $technologyId = (int) htmlspecialchars(strip_tags($technologyId));
-
-        $stmt->bindParam(':resourceId', $this->id, \PDO::PARAM_INT);
-        $stmt->bindParam(':technologyId', $technologyId, \PDO::PARAM_INT);
-
-        try {
-            return $stmt->execute();
-        } catch (PDOException $e) {
-            throw new Exception("Erreur de dissociation de technologie : " . $e->getMessage());
-        }
-    }
+        $lastInsertId = $this->conn->lastInsertId();
+        $stmt->bindParam(':technology_id', $technologyId);
+        $stmt->bindParam(':resource_id', $lastInsertId);
+        return $stmt->execute();
+    } 
 }
 ?>

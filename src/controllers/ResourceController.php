@@ -7,7 +7,7 @@ namespace App;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Models\Resource;
-use Exception;  // Importation de la classe Exception
+use Exception;
 
 // ------------------------------
 // Contrôleur de Ressource
@@ -58,20 +58,27 @@ class ResourceController {
     // ------------------------------
     public function create(Request $request, Response $response, array $args): Response {
         $data = $this->getData($request);
-
+    
         $this->resource->name = $data['name'] ?? null;
         $this->resource->url = $data['url'] ?? null;
-        $this->resource->technology_id = $data['technology_id'] ?? null;
-
+    
+        if (!isset($data['technology_id']) || empty($data['technology_id'])) {
+            $response->getBody()->write(json_encode(array("error" => "technology_id is required.")));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+    
         try {
             if($this->resource->create()) {
+
+                $this->resource->addTechnologyResourceRelationship((int) $data['technology_id']);
+    
                 $response->getBody()->write(json_encode(array("message" => "Ressource créée.")));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
             } else {
                 $response->getBody()->write(json_encode(array("message" => "Échec de la création de la ressource.")));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
             }
-        } catch (Exception $e) {  // Ajout de | Exception
+        } catch (Exception $e) {
             $response->getBody()->write(json_encode(array("error" => $e->getMessage())));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
@@ -124,6 +131,6 @@ class ResourceController {
             $response->getBody()->write(json_encode(array("error" => $e->getMessage())));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
-    }
+    }   
 }
 ?>

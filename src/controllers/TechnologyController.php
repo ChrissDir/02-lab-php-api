@@ -144,5 +144,143 @@ class TechnologyController {
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);  // Statut 500
         }
     }
+    
+    // ------------------------------
+    // Récupérer les catégories associées à une technologie
+    // ------------------------------
+    public function getCategories(Request $request, Response $response, array $args): Response {
+        $technologyId = $args['id'];  // ID de la technologie
+
+        try {
+            $categories = $this->technology->getCategories($technologyId);  // Récupérer les catégories
+            if(!empty($categories)) {
+                $response->getBody()->write(json_encode($categories));  // Écrire les catégories dans la réponse
+                return $response->withHeader('Content-Type', 'application/json');  // Définir le type de contenu
+            } else {
+                $response->getBody()->write(json_encode(["message" => "Aucune catégorie trouvée pour cette technologie."]));  // Message d'erreur
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(404);  // Statut 404
+            }
+        } catch (Exception $e) {
+            $response->getBody()->write(json_encode(["error" => $e->getMessage()]));  // Message d'erreur
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);  // Statut 500
+        }
+    }
+
+    // ------------------------------
+    // Associer une catégorie à une technologie
+    // ------------------------------
+    public function addCategory(Request $request, Response $response, array $args): Response {
+        $data = $this->getData($request);
+        $technologyId = $args['id'];
+        $categoryId = $data['category_id'];
+
+        $this->technology->id = $technologyId;
+
+        try {
+            if ($this->technology->addCategory($categoryId)) {
+                $response->getBody()->write(json_encode(["message" => "Catégorie associée à la technologie."]));
+                return $response->withHeader('Content-Type', 'application/json');
+            } else {
+                $response->getBody()->write(json_encode(["message" => "Échec de l'association de la catégorie à la technologie."]));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            }
+        } catch (Exception $e) {
+            $response->getBody()->write(json_encode(["error" => $e->getMessage()]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
+    }
+
+    // ------------------------------
+    // Dissocier une catégorie d'une technologie
+    // ------------------------------
+    public function removeCategory(Request $request, Response $response, array $args): Response {
+        $data = $this->getData($request);
+        $technologyId = $args['id'];
+        $categoryId = $args['categoryId'];
+
+        $this->technology->id = $technologyId;
+
+        try {
+            if ($this->technology->removeCategory($categoryId)) {
+                $response->getBody()->write(json_encode(["message" => "Catégorie dissociée de la technologie."]));
+                return $response->withHeader('Content-Type', 'application/json');
+            } else {
+                $response->getBody()->write(json_encode(["message" => "Échec de la dissociation de la catégorie de la technologie."]));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            }
+        } catch (Exception $e) {
+            $response->getBody()->write(json_encode(["error" => $e->getMessage()]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
+    }
+
+    // ------------------------------
+    // Récupérer les ressources associées à une technologie
+    // ------------------------------
+    public function getResources(Request $request, Response $response, array $args): Response {
+        $technologyId = $args['id'];  // ID de la technologie
+
+        try {
+            $resources = $this->technology->getResources($technologyId);  // Récupérer les ressources
+            if(!empty($resources)) {
+                $response->getBody()->write(json_encode($resources));  // Écrire les ressources dans la réponse
+                return $response->withHeader('Content-Type', 'application/json');  // Définir le type de contenu
+            } else {
+                $response->getBody()->write(json_encode(["message" => "Aucune ressource trouvée pour cette technologie."]));  // Message d'erreur
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(404);  // Statut 404
+            }
+        } catch (Exception $e) {
+            $response->getBody()->write(json_encode(["error" => $e->getMessage()]));  // Message d'erreur
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);  // Statut 500
+        }
+    }
+
+    // ------------------------------
+    // Associer une ressource à une technologie
+    // ------------------------------
+    public function addResource(Request $request, Response $response, array $args): Response {
+        $data = $this->getData($request);
+        $technologyId = $args['id'];
+        $resourceId = $data['resource_id'];
+
+        $this->technology->id = $technologyId;
+
+        try {
+            if ($this->technology->addResource($resourceId)) {
+                $response->getBody()->write(json_encode(["message" => "Ressource associée à la technologie."]));
+                return $response->withHeader('Content-Type', 'application/json');
+            } else {
+                $response->getBody()->write(json_encode(["message" => "Échec de l'association de la ressource à la technologie."]));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            }
+        } catch (Exception $e) {
+            $response->getBody()->write(json_encode(["error" => $e->getMessage()]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
+    }
+
+    // ------------------------------
+    // Dissocier une ressource d'une technologie
+    // ------------------------------
+    public function removeResource(Request $request, Response $response, array $args): Response {
+        $data = $this->getData($request);
+        $technologyId = $args['id'];
+        $resourceId = $args['resourceId'];
+
+        $this->technology->id = $technologyId;
+
+        try {
+            if ($this->technology->removeResource($resourceId)) {
+                $response->getBody()->write(json_encode(["message" => "Ressource dissociée de la technologie."]));
+                return $response->withHeader('Content-Type', 'application/json');
+            } else {
+                $response->getBody()->write(json_encode(["message" => "Échec de la dissociation de la ressource de la technologie."]));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            }
+        } catch (Exception $e) {
+            $response->getBody()->write(json_encode(["error" => $e->getMessage()]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
+    }
 }
 ?>

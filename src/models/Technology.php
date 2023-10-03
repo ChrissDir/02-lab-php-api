@@ -130,32 +130,50 @@ class Technology {
             throw new Exception("ID de technologie invalide.");
         }
     
-        // Récupérer le chemin du fichier logo avant de supprimer la technologie
-        $query = "SELECT logo FROM " . self::TABLE_NAME . " WHERE id=:id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':id', $this->id, \PDO::PARAM_INT);
-        $stmt->execute();
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-        $logoPath = $row['logo'];
-    
-        // Supprimer la technologie
-        $query = "DELETE FROM " . self::TABLE_NAME . " WHERE id=:id";
-        $stmt = $this->conn->prepare($query);
-        $this->id = (int) htmlspecialchars(strip_tags($this->id));
-        $stmt->bindParam(':id', $this->id, \PDO::PARAM_INT);
-    
-        try {
-            if ($stmt->execute()) {
-                // Supprimer le fichier logo
-                if (file_exists($logoPath)) {
-                    unlink($logoPath);
-                }
-                return true;
+    // Récupérer le chemin du fichier logo avant de supprimer la technologie
+    $query = "SELECT logo FROM " . self::TABLE_NAME . " WHERE id=:id";
+    $stmt = $this->conn->prepare($query);
+    $stmt->bindParam(':id', $this->id, \PDO::PARAM_INT);
+    $stmt->execute();
+    $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+    $logoPath = __DIR__ . "/../" . $row['logo'];
+
+    // Supprimer la technologie
+    $query = "DELETE FROM " . self::TABLE_NAME . " WHERE id=:id";
+    $stmt = $this->conn->prepare($query);
+    $this->id = (int) htmlspecialchars(strip_tags($this->id));
+    $stmt->bindParam(':id', $this->id, \PDO::PARAM_INT);
+
+    try {
+        if ($stmt->execute()) {
+            // Supprimer le fichier logo
+            if (file_exists($logoPath)) {
+                unlink($logoPath);
             }
-        } catch (PDOException $e) {
-            throw new Exception("Erreur de suppression de technologie : " . $e->getMessage());
+            return true;
         }
+    } catch (PDOException $e) {
+        throw new Exception("Erreur de suppression de technologie : " . $e->getMessage());
+    }
         return false;
+    }
+    /**
+     * @throws Exception
+     */
+    public function getCategories(int $technologyId): array {
+        $query = "SELECT c.id, c.nom 
+                FROM categorie c 
+                JOIN technologie_categorie tc ON c.id = tc.categorie_id 
+                WHERE tc.technologie_id = :technologyId";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':technologyId', $technologyId, PDO::PARAM_INT);
+
+        try {
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new Exception("Erreur de lecture des catégories : " . $e->getMessage());
+        }
     }
 
     /**
@@ -203,6 +221,76 @@ class Technology {
             return $stmt->execute();
         } catch (PDOException $e) {
             throw new Exception("Erreur de dissociation de catégorie : " . $e->getMessage());
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getResources(int $technologyId): array {
+        if (empty($technologyId)) {
+            throw new Exception("ID de technologie invalide.");
+        }
+
+        $query = "SELECT r.* FROM ressources r
+                JOIN technologie_ressource tr ON r.id = tr.ressource_id
+                WHERE tr.technologie_id = :technologyId";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':technologyId', $technologyId, PDO::PARAM_INT);
+
+        try {
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new Exception("Erreur lors de la récupération des ressources : " . $e->getMessage());
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function addResource(int $resourceId): bool {
+        if (empty($this->id) || empty($resourceId)) {
+            throw new Exception("ID de technologie ou de ressource invalide.");
+        }
+
+        $query = "INSERT INTO technologie_ressource (technologie_id, ressource_id) VALUES (:technologyId, :resourceId)";
+        $stmt = $this->conn->prepare($query);
+
+        $this->id = (int) htmlspecialchars(strip_tags($this->id));
+        $resourceId = (int) htmlspecialchars(strip_tags($resourceId));
+
+        $stmt->bindParam(':technologyId', $this->id, \PDO::PARAM_INT);
+        $stmt->bindParam(':resourceId', $resourceId, \PDO::PARAM_INT);
+
+        try {
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            throw new Exception("Erreur d'association de ressource : " . $e->getMessage());
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function removeResource(int $resourceId): bool {
+        if (empty($this->id) || empty($resourceId)) {
+            throw new Exception("ID de technologie ou de ressource invalide.");
+        }
+
+        $query = "DELETE FROM technologie_ressource WHERE technologie_id = :technologyId AND ressource_id = :resourceId";
+        $stmt = $this->conn->prepare($query);
+
+        $this->id = (int) htmlspecialchars(strip_tags($this->id));
+        $resourceId = (int) htmlspecialchars(strip_tags($resourceId));
+
+        $stmt->bindParam(':technologyId', $this->id, \PDO::PARAM_INT);
+        $stmt->bindParam(':resourceId', $resourceId, \PDO::PARAM_INT);
+
+        try {
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            throw new Exception("Erreur de dissociation de ressource : " . $e->getMessage());
         }
     }
 

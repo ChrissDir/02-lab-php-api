@@ -30,9 +30,9 @@ CREATE TABLE IF NOT EXISTS technologie_categorie (
     categorie_id INT NOT NULL,
     PRIMARY KEY (technologie_id, categorie_id),
     FOREIGN KEY (technologie_id) REFERENCES technologie(id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (categorie_id) REFERENCES categorie(id)
-        ON DELETE CASCADE ON UPDATE CASCADE
+    ON DELETE CASCADE ON UPDATE CASCADE
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Création de la table d'association entre les technologies et les ressources
@@ -41,11 +41,7 @@ CREATE TABLE IF NOT EXISTS technologie_ressource (
     ressource_id INT NOT NULL,
     PRIMARY KEY (technologie_id, ressource_id),
     FOREIGN KEY (technologie_id) REFERENCES technologie(id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
+    ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (ressource_id) REFERENCES ressource(id)
-        ON DELETE CASCADE ON UPDATE CASCADE
+    ON DELETE CASCADE ON UPDATE CASCADE
 ) CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Ajout d'indices
-CREATE INDEX idx_technologie_categorie ON technologie_categorie(technologie_id, categorie_id);
-CREATE INDEX idx_technologie_ressource ON technologie_ressource(technologie_id, ressource_id);
