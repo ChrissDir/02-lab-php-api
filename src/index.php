@@ -17,10 +17,16 @@ $app = AppFactory::create();
 // ------------------------------
 // Configuration de la connexion à la base de données
 // ------------------------------
-$db = new PDO('mysql:host='.DB_HOST.';dbname='.DB_NAME, DB_USER, DB_PASS);
-$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+try {
+    $db = new PDO('mysql:host='.DB_HOST.';dbname='.DB_NAME, DB_USER, DB_PASS);
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die("Erreur de connexion à la base de données: " . $e->getMessage());
+}
 
+// ------------------------------
 // Ajout du middleware pour analyser le corps de la requête
+// ------------------------------
 $app->addBodyParsingMiddleware();
 
 // ------------------------------
@@ -41,7 +47,7 @@ $app->group('/technologies', function ($group) use ($db) {
     $controller = new \App\TechnologyController($db);
     $group->get('', [$controller, 'read']);
     $group->post('', [$controller, 'create']);
-    $group->post('/{id}', [$controller, 'update']);
+    $group->put('/{id}', [$controller, 'update']);
     $group->delete('/{id}', [$controller, 'delete']);
 
     // Routes pour gérer les ressources associées à une technologie
@@ -62,7 +68,7 @@ $app->group('/categories', function ($group) use ($db) {
     $controller = new \App\CategoryController($db);
     $group->get('', [$controller, 'read']);
     $group->post('', [$controller, 'create']);
-    $group->post('/{id}', [$controller, 'update']);
+    $group->put('/{id}', [$controller, 'update']);
     $group->delete('/{id}', [$controller, 'delete']);
 });
 
@@ -73,9 +79,10 @@ $app->group('/ressources', function ($group) use ($db) {
     $controller = new \App\ResourceController($db);
     $group->get('', [$controller, 'read']);
     $group->post('', [$controller, 'create']);
-    $group->post('/{id}', [$controller, 'update']);
+    $group->put('/{id}', [$controller, 'update']);
     $group->delete('/{id}', [$controller, 'delete']);
 });
+
 // ------------------------------
 // Gestionnaire d'erreurs personnalisé
 // ------------------------------
@@ -91,6 +98,7 @@ $customErrorHandler = function (
     $response->getBody()->write(json_encode($payload, JSON_UNESCAPED_UNICODE));
     return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
 };
+
 // ------------------------------
 // Ajout du middleware d'erreur
 // ------------------------------

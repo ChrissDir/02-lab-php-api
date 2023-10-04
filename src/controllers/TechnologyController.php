@@ -105,6 +105,8 @@ class TechnologyController {
         // Vérifier si le fichier a été téléchargé sans erreur
         if ($uploadedFile && $uploadedFile->getError() === UPLOAD_ERR_OK) {
             $this->technology->logo = $this->technology->uploadLogo($uploadedFile);  // Télécharger le logo
+        } elseif (isset($data['logo'])) {  // Si un logo en base64 est fourni
+            $this->technology->logo = $this->technology->uploadLogoFromBase64($data['logo']);  // Télécharger le logo depuis base64
         }
 
         try {
@@ -125,6 +127,7 @@ class TechnologyController {
     // ------------------------------
     // Supprimer une technologie
     // ------------------------------
+
     public function delete(Request $request, Response $response, array $args): Response {
         $data = $this->getData($request);
         $id = $args['id'] ?? $data['id'];  // Permet de supprimer par ID dans l'URL ou dans le corps de la requête
@@ -148,6 +151,7 @@ class TechnologyController {
     // ------------------------------
     // Récupérer les catégories associées à une technologie
     // ------------------------------
+
     public function getCategories(Request $request, Response $response, array $args): Response {
         $technologyId = $args['id'];  // ID de la technologie
 
@@ -169,6 +173,7 @@ class TechnologyController {
     // ------------------------------
     // Associer une catégorie à une technologie
     // ------------------------------
+
     public function addCategory(Request $request, Response $response, array $args): Response {
         $data = $this->getData($request);
         $technologyId = $args['id'];
@@ -193,6 +198,7 @@ class TechnologyController {
     // ------------------------------
     // Dissocier une catégorie d'une technologie
     // ------------------------------
+
     public function removeCategory(Request $request, Response $response, array $args): Response {
         $data = $this->getData($request);
         $technologyId = $args['id'];
@@ -217,6 +223,7 @@ class TechnologyController {
     // ------------------------------
     // Récupérer les ressources associées à une technologie
     // ------------------------------
+
     public function getResources(Request $request, Response $response, array $args): Response {
         $technologyId = $args['id'];  // ID de la technologie
 
@@ -238,6 +245,7 @@ class TechnologyController {
     // ------------------------------
     // Associer une ressource à une technologie
     // ------------------------------
+
     public function addResource(Request $request, Response $response, array $args): Response {
         $data = $this->getData($request);
         $technologyId = $args['id'];
@@ -262,6 +270,7 @@ class TechnologyController {
     // ------------------------------
     // Dissocier une ressource d'une technologie
     // ------------------------------
+    
     public function removeResource(Request $request, Response $response, array $args): Response {
         $data = $this->getData($request);
         $technologyId = $args['id'];

@@ -18,9 +18,6 @@ class Technology {
         $this->conn = $db;
     }
 
-    /**
-     * @throws Exception
-     */
     public function read(int $offset = 0, int $items_per_page = 10): array {
         $query = "SELECT * FROM " . self::TABLE_NAME . " LIMIT :offset, :items_per_page";
         $stmt = $this->conn->prepare($query);
@@ -31,13 +28,11 @@ class Technology {
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            throw new Exception("Erreur de lecture des technologies : " . $e->getMessage());
+            // Avoid exposing detailed error messages
+            throw new Exception("Erreur de lecture des technologies.");
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function create(): bool {
         if (empty($this->name) || strlen($this->name) > self::MAX_NAME_LENGTH || 
             empty($this->logo) || strlen($this->logo) > self::MAX_LOGO_URL_LENGTH) {
@@ -56,13 +51,11 @@ class Technology {
         try {
             return $stmt->execute();
         } catch (PDOException $e) {
-            throw new Exception("Erreur de création de technologie : " . $e->getMessage());
+            // Avoid exposing detailed error messages
+            throw new Exception("Erreur de création de technologie.");
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function update(): bool {
         if (empty($this->id)) {
             throw new Exception("ID de technologie invalide.");
@@ -117,50 +110,51 @@ class Technology {
                 return true;
             }
         } catch (PDOException $e) {
-            throw new Exception("Erreur de mise à jour de technologie : " . $e->getMessage());
+            // Avoid exposing detailed error messages
+            throw new Exception("Erreur de mise à jour de technologie.");
         }
         return false;
     }
 
-    /**
-     * @throws Exception
-     */
     public function delete(): bool {
         if (empty($this->id)) {
             throw new Exception("ID de technologie invalide.");
         }
     
-    // Récupérer le chemin du fichier logo avant de supprimer la technologie
-    $query = "SELECT logo FROM " . self::TABLE_NAME . " WHERE id=:id";
-    $stmt = $this->conn->prepare($query);
-    $stmt->bindParam(':id', $this->id, \PDO::PARAM_INT);
-    $stmt->execute();
-    $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-    $logoPath = __DIR__ . "/../" . $row['logo'];
+        // Récupérer le chemin du fichier logo avant de supprimer la technologie
+        $query = "SELECT logo FROM " . self::TABLE_NAME . " WHERE id=:id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $this->id, \PDO::PARAM_INT);
+        $stmt->execute();
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $logoPath = __DIR__ . "/../" . $row['logo'];
 
-    // Supprimer la technologie
-    $query = "DELETE FROM " . self::TABLE_NAME . " WHERE id=:id";
-    $stmt = $this->conn->prepare($query);
-    $this->id = (int) htmlspecialchars(strip_tags($this->id));
-    $stmt->bindParam(':id', $this->id, \PDO::PARAM_INT);
+        // Supprimer la technologie
+        $query = "DELETE FROM " . self::TABLE_NAME . " WHERE id=:id";
+        $stmt = $this->conn->prepare($query);
+        $this->id = (int) htmlspecialchars(strip_tags($this->id));
+        $stmt->bindParam(':id', $this->id, \PDO::PARAM_INT);
 
-    try {
-        if ($stmt->execute()) {
-            // Supprimer le fichier logo
-            if (file_exists($logoPath)) {
-                unlink($logoPath);
+        try {
+            if ($stmt->execute()) {
+                // Supprimer le fichier logo
+                if (file_exists($logoPath)) {
+                    unlink($logoPath);
+                }
+                return true;
             }
-            return true;
+        } catch (PDOException $e) {
+            // Avoid exposing detailed error messages
+            throw new Exception("Erreur de suppression de technologie.");
         }
-    } catch (PDOException $e) {
-        throw new Exception("Erreur de suppression de technologie : " . $e->getMessage());
-    }
         return false;
     }
-    /**
-     * @throws Exception
-     */
+
     public function getCategories(int $technologyId): array {
+        if (empty($technologyId)) {
+            throw new Exception("ID de technologie invalide.");
+        }
+    
         $query = "SELECT c.id, c.nom 
                 FROM categorie c 
                 JOIN technologie_categorie tc ON c.id = tc.categorie_id 
@@ -172,13 +166,11 @@ class Technology {
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            throw new Exception("Erreur de lecture des catégories : " . $e->getMessage());
+            // Avoid exposing detailed error messages
+            throw new Exception("Erreur de lecture des catégories.");
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function addCategory(int $categoryId): bool {
         if (empty($this->id) || empty($categoryId)) {
             throw new Exception("ID de technologie ou de catégorie invalide.");
@@ -196,13 +188,11 @@ class Technology {
         try {
             return $stmt->execute();
         } catch (PDOException $e) {
-            throw new Exception("Erreur d'association de catégorie : " . $e->getMessage());
+            // Avoid exposing detailed error messages
+            throw new Exception("Erreur d'association de catégorie.");
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function removeCategory(int $categoryId): bool {
         if (empty($this->id) || empty($categoryId)) {
             throw new Exception("ID de technologie ou de catégorie invalide.");
@@ -220,35 +210,31 @@ class Technology {
         try {
             return $stmt->execute();
         } catch (PDOException $e) {
-            throw new Exception("Erreur de dissociation de catégorie : " . $e->getMessage());
+            // Avoid exposing detailed error messages
+            throw new Exception("Erreur de dissociation de catégorie.");
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function getResources(int $technologyId): array {
         if (empty($technologyId)) {
             throw new Exception("ID de technologie invalide.");
         }
-
-        $query = "SELECT r.* FROM ressources r
+    
+        $query = "SELECT r.* FROM ressource r
                 JOIN technologie_ressource tr ON r.id = tr.ressource_id
                 WHERE tr.technologie_id = :technologyId";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':technologyId', $technologyId, PDO::PARAM_INT);
-
+    
         try {
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            throw new Exception("Erreur lors de la récupération des ressources : " . $e->getMessage());
+            // Avoid exposing detailed error messages
+            throw new Exception("Erreur lors de la récupération des ressources.");
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function addResource(int $resourceId): bool {
         if (empty($this->id) || empty($resourceId)) {
             throw new Exception("ID de technologie ou de ressource invalide.");
@@ -266,13 +252,11 @@ class Technology {
         try {
             return $stmt->execute();
         } catch (PDOException $e) {
-            throw new Exception("Erreur d'association de ressource : " . $e->getMessage());
+            // Avoid exposing detailed error messages
+            throw new Exception("Erreur d'association de ressource.");
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function removeResource(int $resourceId): bool {
         if (empty($this->id) || empty($resourceId)) {
             throw new Exception("ID de technologie ou de ressource invalide.");
@@ -290,7 +274,8 @@ class Technology {
         try {
             return $stmt->execute();
         } catch (PDOException $e) {
-            throw new Exception("Erreur de dissociation de ressource : " . $e->getMessage());
+            // Avoid exposing detailed error messages
+            throw new Exception("Erreur de dissociation de ressource.");
         }
     }
 
@@ -308,6 +293,27 @@ class Technology {
         $destination = __DIR__ . "/../" . $filename;
         $uploadedFile->moveTo($destination);
     
+        return $filename;
+    }
+
+    public function uploadLogoFromBase64($base64Data): string {
+        $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $base64Data));
+        if ($imageData === false) {
+            throw new Exception("Erreur lors du décodage de la chaîne base64.");
+        }
+    
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->buffer($imageData);
+        if (strpos($mime, 'image') === false) {
+            throw new Exception("Le fichier fourni n'est pas une image.");
+        }
+    
+        $extension = explode('/', $mime)[1];
+        $basename = bin2hex(random_bytes(8));  // Générer un nom de fichier unique
+        $filename = sprintf("/Logos/%s.%s", $basename, $extension);  // chemin relatif
+        $destination = __DIR__ . "/../" . $filename;
+        file_put_contents($destination, $imageData);
+
         return $filename;
     }
 }

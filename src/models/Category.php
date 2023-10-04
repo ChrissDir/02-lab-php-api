@@ -17,9 +17,6 @@ class Category {
         $this->conn = $db;
     }
 
-    /**
-     * @throws Exception
-     */
     public function read(): array {
         $query = "SELECT * FROM " . self::TABLE_NAME;
         $stmt = $this->conn->prepare($query);
@@ -28,13 +25,11 @@ class Category {
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            throw new Exception("Erreur de lecture des catégories : " . $e->getMessage());
+            // Avoid exposing detailed error messages
+            throw new Exception("Erreur de lecture des catégories.");
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function create(): bool {
         if (empty($this->name) || strlen($this->name) > self::MAX_NAME_LENGTH) {
             throw new Exception("Nom de catégorie invalide.");
@@ -50,13 +45,11 @@ class Category {
         try {
             return $stmt->execute();
         } catch (PDOException $e) {
-            throw new Exception("Erreur de création de catégorie : " . $e->getMessage());
+            // Avoid exposing detailed error messages
+            throw new Exception("Erreur de création de catégorie.");
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function update(): bool {
         if (empty($this->id) || !is_numeric($this->id)) {
             throw new Exception("ID de catégorie invalide.");
@@ -88,13 +81,11 @@ class Category {
         try {
             return $stmt->execute();
         } catch (PDOException $e) {
-            throw new Exception("Erreur de mise à jour de catégorie : " . $e->getMessage());
+            // Avoid exposing detailed error messages
+            throw new Exception("Erreur de mise à jour de catégorie.");
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function delete(): bool {
         if (empty($this->id) || !is_numeric($this->id)) {
             throw new Exception("ID de catégorie invalide.");
@@ -110,7 +101,8 @@ class Category {
         try {
             return $stmt->execute();
         } catch (PDOException $e) {
-            throw new Exception("Erreur de suppression de catégorie : " . $e->getMessage());
+            // Avoid exposing detailed error messages
+            throw new Exception("Erreur de suppression de catégorie.");
         }
     }
 }

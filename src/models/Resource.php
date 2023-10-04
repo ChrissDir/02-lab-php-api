@@ -20,9 +20,6 @@ class Resource {
         $this->conn = $db;
     }
 
-    /**
-     * @throws Exception
-     */
     public function read(): array {
         $query = "SELECT * FROM " . self::TABLE_NAME;
         $stmt = $this->conn->prepare($query);
@@ -31,13 +28,11 @@ class Resource {
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            throw new Exception("Erreur de lecture des ressources : " . $e->getMessage());
+            // Avoid exposing detailed error messages
+            throw new Exception("Erreur de lecture des ressources.");
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function create(): bool {
         if (empty($this->name) || strlen($this->name) > self::MAX_NAME_LENGTH || 
             empty($this->url) || strlen($this->url) > self::MAX_URL_LENGTH) {
@@ -56,13 +51,11 @@ class Resource {
         try {
             return $stmt->execute();
         } catch (PDOException $e) {
-            throw new Exception("Erreur de création de ressource : " . $e->getMessage());
+            // Avoid exposing detailed error messages
+            throw new Exception("Erreur de création de ressource.");
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function update(): bool {
         if (empty($this->id)) {
             throw new Exception("ID de ressource invalide.");
@@ -111,13 +104,11 @@ class Resource {
         try {
             return $stmt->execute();
         } catch (PDOException $e) {
-            throw new Exception("Erreur de mise à jour de ressource : " . $e->getMessage());
+            // Avoid exposing detailed error messages
+            throw new Exception("Erreur de mise à jour de ressource.");
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function delete(): bool {
         if (empty($this->id)) {
             throw new Exception("ID de ressource invalide.");
@@ -133,7 +124,8 @@ class Resource {
         try {
             return $stmt->execute();
         } catch (PDOException $e) {
-            throw new Exception("Erreur de suppression de ressource : " . $e->getMessage());
+            // Avoid exposing detailed error messages
+            throw new Exception("Erreur de suppression de ressource.");
         }
     }
 
@@ -141,8 +133,8 @@ class Resource {
         $query = "INSERT INTO technologie_ressource (technologie_id, ressource_id) VALUES (:technology_id, :resource_id)";
         $stmt = $this->conn->prepare($query);
         $lastInsertId = $this->conn->lastInsertId();
-        $stmt->bindParam(':technology_id', $technologyId);
-        $stmt->bindParam(':resource_id', $lastInsertId);
+        $stmt->bindParam(':technology_id', $technologyId, \PDO::PARAM_INT);
+        $stmt->bindParam(':resource_id', $lastInsertId, \PDO::PARAM_INT);
         return $stmt->execute();
     } 
 }

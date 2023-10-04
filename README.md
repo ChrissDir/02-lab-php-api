@@ -23,13 +23,14 @@ Ce projet est une API REST développée en PHP en utilisant le framework Slim 4,
   - Paramètres : `name`, `logo`, `category_id`
 
 - **Mettre à jour une technologie** :
-  - Méthode : `POST`
+  - Méthode : `PUT`
   - URL : `/technologies/{id}`
-  - Paramètres : `name`, `logo`, `category_id`
+  - Paramètres : `name`, `logo`(en base64), `category_id`
 
 - **Supprimer une technologie** :
   - Méthode : `DELETE`
   - URL : `/technologies/{id}`
+
 
 - **Lister toutes les ressources d'une technologie** :
   - Méthode : `GET`
@@ -43,6 +44,7 @@ Ce projet est une API REST développée en PHP en utilisant le framework Slim 4,
 - **Supprimer une ressource d'une technologie** :
   - Méthode : `DELETE`
   - URL : `/technologies/{id}/ressources/{resourceId}`
+
 
 - **Lister toutes les catégories d'une technologie** :
   - Méthode : `GET`
@@ -69,7 +71,7 @@ Ce projet est une API REST développée en PHP en utilisant le framework Slim 4,
   - Paramètres : `name`
 
 - **Mettre à jour une catégorie** :
-  - Méthode : `POST`
+  - Méthode : `PUT`
   - URL : `/categories/{id}`
   - Paramètres : `name`
 
@@ -89,7 +91,7 @@ Ce projet est une API REST développée en PHP en utilisant le framework Slim 4,
   - Paramètres : `name`, `url`, `technology_id`
 
 - **Mettre à jour une ressource** :
-  - Méthode : `POST`
+  - Méthode : `PUT`
   - URL : `/ressources/{id}`
   - Paramètres : `name`, `url`, `technology_id`
 
